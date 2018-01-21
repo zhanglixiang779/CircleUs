@@ -32,7 +32,7 @@ public class CircleUsApplication extends Application {
 				.build();
 	}
 	
-	public ActivityComponent getActivityComponent() {
+	public synchronized ActivityComponent getActivityComponent() {
 		if (mActivityComponent == null) {
 			mActivityComponent = mAppComponent.getActivityComponent(new SplashModule());
 		}
