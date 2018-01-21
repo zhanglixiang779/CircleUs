@@ -1,8 +1,9 @@
-package com.financial.gavin.circleus;
+package com.financial.gavin.circleus.ui.main;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
+import com.financial.gavin.circleus.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
