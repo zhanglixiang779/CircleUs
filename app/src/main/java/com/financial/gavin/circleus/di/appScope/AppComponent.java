@@ -1,7 +1,7 @@
 package com.financial.gavin.circleus.di.appScope;
 
-import com.financial.gavin.circleus.di.appScope.activityScope.ActivityComponent;
-import com.financial.gavin.circleus.di.appScope.activityScope.SplashModule;
+import com.financial.gavin.circleus.di.activityScope.ActivityComponent;
+import com.financial.gavin.circleus.di.activityScope.SplashModule;
 
 import javax.inject.Singleton;
 

@@ -1,4 +1,4 @@
-package com.financial.gavin.circleus.di.appScope.activityScope;
+package com.financial.gavin.circleus.di.activityScope;
 
 import com.financial.gavin.circleus.ui.permission.PermissionsContract;
 import com.financial.gavin.circleus.ui.permission.PermissionsPresenter;
