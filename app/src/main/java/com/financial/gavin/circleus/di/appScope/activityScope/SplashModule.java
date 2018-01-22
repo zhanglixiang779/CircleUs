@@ -1,6 +1,5 @@
-package com.financial.gavin.circleus.di.activityScope;
+package com.financial.gavin.circleus.di.appScope.activityScope;
 
-import com.financial.gavin.circleus.ui.splash.SplashContract;
 import com.financial.gavin.circleus.ui.splash.SplashContract.Presenter;
 import com.financial.gavin.circleus.ui.splash.SplashPresenter;
 

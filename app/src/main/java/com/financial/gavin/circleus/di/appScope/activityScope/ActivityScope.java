@@ -1,4 +1,4 @@
-package com.financial.gavin.circleus.di.activityScope;
+package com.financial.gavin.circleus.di.appScope.activityScope;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -19,7 +19,7 @@ public class SplashPresenter implements SplashContract.Presenter {
 	}
 	
 	@Override
-	public void startMainActivity() {
-		mSplashView.startMainActivity();
+	public void startPermissionsActivity() {
+		mSplashView.startPermissionsActivity();
 	}
 }

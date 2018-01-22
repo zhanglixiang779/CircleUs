@@ -2,8 +2,8 @@ package com.financial.gavin.circleus;
 
 import android.app.Application;
 
-import com.financial.gavin.circleus.di.activityScope.ActivityComponent;
-import com.financial.gavin.circleus.di.activityScope.SplashModule;
+import com.financial.gavin.circleus.di.appScope.activityScope.ActivityComponent;
+import com.financial.gavin.circleus.di.appScope.activityScope.SplashModule;
 import com.financial.gavin.circleus.di.appScope.AppComponent;
 import com.financial.gavin.circleus.di.appScope.AppModule;
 import com.financial.gavin.circleus.di.appScope.DaggerAppComponent;
