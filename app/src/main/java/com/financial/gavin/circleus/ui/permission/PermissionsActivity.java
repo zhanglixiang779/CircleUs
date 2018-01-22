@@ -99,6 +99,7 @@ public class PermissionsActivity extends AppCompatActivity implements EasyPermis
 		Intent intent = new Intent(this, MainActivity.class);
 		startActivity(intent);
 		finish();
+		overridePendingTransition(0, 0);
 	}
 	
 	@Override
