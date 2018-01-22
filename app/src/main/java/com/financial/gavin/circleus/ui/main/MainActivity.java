@@ -1,29 +1,15 @@
 package com.financial.gavin.circleus.ui.main;
 
-import android.Manifest;
-import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.widget.Toast;
 
-import com.financial.gavin.circleus.CircleUsApplication;
 import com.financial.gavin.circleus.R;
-import com.financial.gavin.circleus.utils.FragmentUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-import java.util.List;
-
-import dagger.android.support.DaggerAppCompatActivity;
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.AppSettingsDialog;
-import pub.devrel.easypermissions.EasyPermissions;
-import pub.devrel.easypermissions.PermissionRequest;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 	

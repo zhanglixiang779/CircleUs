@@ -15,7 +15,7 @@ import com.financial.gavin.circleus.di.appScope.DaggerAppComponent;
 public class CircleUsApplication extends Application {
 	
 	private AppComponent mAppComponent;
-	private ActivityComponent mActivityActivityComponent;
+	private ActivityComponent mActivityComponent;
 	private static CircleUsApplication instance;
 	
 	public static CircleUsApplication getInstance() {
@@ -33,13 +33,13 @@ public class CircleUsApplication extends Application {
 	}
 	
 	public synchronized ActivityComponent getActivityComponent() {
-		if (mActivityActivityComponent == null) {
-			mActivityActivityComponent = mAppComponent.getActivityComponent(new SplashModule());
+		if (mActivityComponent == null) {
+			mActivityComponent = mAppComponent.getActivityComponent(new SplashModule());
 		}
-		return mActivityActivityComponent;
+		return mActivityComponent;
 	}
 	
 	public void dropActivityComponent() {
-		mActivityActivityComponent = null;
+		mActivityComponent = null;
 	}
 }
