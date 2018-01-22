@@ -1,19 +1,19 @@
-package com.financial.gavin.circleus.ui.splash;
+package com.financial.gavin.circleus.ui.main;
 
 import com.financial.gavin.circleus.ui.base.BasePresenter;
 import com.financial.gavin.circleus.ui.base.BaseView;
 
 /**
- * Created by gavin on 1/20/18.
+ * Created by gavin on 1/21/18.
  */
 
-public interface SplashContract {
+public interface MainContract {
 	
 	interface View extends BaseView<Presenter> {
-		void startPermissionsActivity();
+	
 	}
 	
 	interface Presenter extends BasePresenter<View> {
-		void startPermissionsActivity();
+	
 	}
 }

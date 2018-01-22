@@ -2,8 +2,8 @@ package com.financial.gavin.circleus;
 
 import android.app.Application;
 
-import com.financial.gavin.circleus.di.activityScope.ActivityComponent;
-import com.financial.gavin.circleus.di.activityScope.SplashModule;
+import com.financial.gavin.circleus.di.appScope.activityScope.ActivityComponent;
+import com.financial.gavin.circleus.di.appScope.activityScope.SplashModule;
 import com.financial.gavin.circleus.di.appScope.AppComponent;
 import com.financial.gavin.circleus.di.appScope.AppModule;
 import com.financial.gavin.circleus.di.appScope.DaggerAppComponent;
@@ -15,7 +15,7 @@ import com.financial.gavin.circleus.di.appScope.DaggerAppComponent;
 public class CircleUsApplication extends Application {
 	
 	private AppComponent mAppComponent;
-	private ActivityComponent mActivityComponent;
+	private ActivityComponent mActivityActivityComponent;
 	private static CircleUsApplication instance;
 	
 	public static CircleUsApplication getInstance() {
@@ -33,13 +33,13 @@ public class CircleUsApplication extends Application {
 	}
 	
 	public synchronized ActivityComponent getActivityComponent() {
-		if (mActivityComponent == null) {
-			mActivityComponent = mAppComponent.getActivityComponent(new SplashModule());
+		if (mActivityActivityComponent == null) {
+			mActivityActivityComponent = mAppComponent.getActivityComponent(new SplashModule());
 		}
-		return mActivityComponent;
+		return mActivityActivityComponent;
 	}
 	
 	public void dropActivityComponent() {
-		mActivityComponent = null;
+		mActivityActivityComponent = null;
 	}
 }

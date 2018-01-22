@@ -32,9 +32,7 @@
 
         <activity
             android:name=".ui.main.MainActivity"
-            android:label="@string/title_activity_main">
-        </activity>
-
+            android:label="@string/title_activity_main"></activity>
         <activity
             android:name=".ui.splash.SplashActivity"
             android:theme="@style/SplashTheme">
@@ -44,7 +42,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity android:name=".ui.permission.PermissionsActivity"></activity>
     </application>
 
 </manifest>
