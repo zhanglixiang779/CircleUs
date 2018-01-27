@@ -1,7 +1,9 @@
 package com.financial.gavin.circleus.di.appScope;
 
 import com.financial.gavin.circleus.di.activityScope.ActivityComponent;
-import com.financial.gavin.circleus.di.activityScope.SplashModule;
+import com.financial.gavin.circleus.di.activityScope.GoogleServiceModule;
+import com.financial.gavin.circleus.di.activityScope.PresentersModule;
+import com.financial.gavin.circleus.ui.main.MainActivity;
 
 import javax.inject.Singleton;
 
@@ -15,5 +17,5 @@ import dagger.Component;
 @Singleton
 @Component(modules = {AppModule.class})
 public interface AppComponent {
-	ActivityComponent getActivityComponent(SplashModule splashModule);
+	ActivityComponent getActivityComponent(PresentersModule presentersModule, GoogleServiceModule googleServiceModule);
 }

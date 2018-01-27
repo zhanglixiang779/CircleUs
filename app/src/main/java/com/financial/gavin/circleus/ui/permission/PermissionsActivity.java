@@ -59,8 +59,8 @@ public class PermissionsActivity extends AppCompatActivity implements EasyPermis
 			// Already have permission, do the thing
 			mPermissionsPresenter.startMainActivity();
 		} else {
-			// Do not have permissions, request them now
-			EasyPermissions.requestPermissions(
+//			 Do not have permissions, request them now
+				EasyPermissions.requestPermissions(
 					new PermissionRequest.Builder(this, LOCATION_REQUEST_CODE, perms)
 							.setRationale(R.string.location_rationale)
 							.setPositiveButtonText(R.string.rationale_ask_ok)
@@ -72,7 +72,9 @@ public class PermissionsActivity extends AppCompatActivity implements EasyPermis
 	
 	@Override
 	public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
-		mPermissionsPresenter.startMainActivity();
+		if (requestCode == LOCATION_REQUEST_CODE && perms.get(0).equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
+			mPermissionsPresenter.startMainActivity();
+		}
 	}
 	
 	@Override

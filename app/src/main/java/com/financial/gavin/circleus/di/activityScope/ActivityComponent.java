@@ -1,5 +1,6 @@
 package com.financial.gavin.circleus.di.activityScope;
 
+import com.financial.gavin.circleus.ui.main.MainActivity;
 import com.financial.gavin.circleus.ui.permission.PermissionsActivity;
 import com.financial.gavin.circleus.ui.splash.SplashActivity;
 
@@ -12,10 +13,11 @@ import dagger.Subcomponent;
 @ActivityScope
 @Subcomponent(modules =
 		{
-			SplashModule.class,
-			PermissionsModule.class
+			PresentersModule.class,
+			GoogleServiceModule.class
 		})
 public interface ActivityComponent {
 	void inject(SplashActivity splashActivity);
 	void inject(PermissionsActivity permissionsActivity);
+	void inject(MainActivity mainActivity);
 }
