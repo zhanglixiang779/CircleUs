@@ -41,25 +41,19 @@ import javax.inject.Inject;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback, MainContract.View {
 	
-	private GoogleMap mMap;
-	private Marker mMarker;
-	private static final int REQUEST_CHECK_SETTINGS = 100;
-	private static final int INTERVAL = 500;
-	private static final int FAST_INTERVAL = 100;
-	View mapView;
 	
-	LatLng mCurrentLatLng;
-	@Inject
-	LocationRequest mLocationRequest;
-	@Inject
-	SettingsClient mSettingsClient;
-	@Inject
-	LocationSettingsRequest.Builder mLocationSettingsRequestBuilder;
-	@Inject
-	FusedLocationProviderClient mFusedLocationProviderClient;
 	@Inject
 	MainContract.Presenter mMainPresenter;
 	
+	private GoogleMap mMap;
+	private static final int REQUEST_CHECK_SETTINGS = 100;
+	private static final int ZOOM_LEVEL = 17;
+	private static final int ANIMATION_PERIOD = 1000;
+	private static final int MARGIN_LEFT = 0;
+	private static final int MARGIN_RIGHT = 30;
+	private static final int MARGIN_TOP = 0;
+	private static final int MARGIN_BOTTOM = 30;
+	private View mapView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +62,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		CircleUsApplication.getInstance().getActivityComponent().inject(this);
 		mMainPresenter.addView(this);
 		
-		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.map);
 		mapFragment.getMapAsync(this);
@@ -84,49 +77,26 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		mMap = googleMap;
-		
-		if (mapView != null &&
-				mapView.findViewById(Integer.parseInt("1")) != null) {
-			// Get the button view
-			View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-			// and next place it, on bottom right (as Google Maps app)
-			RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
-					locationButton.getLayoutParams();
-			// position on right bottom
-			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-			layoutParams.setMargins(0, 0, 30, 30);
-		}
 		mMap.setMyLocationEnabled(true);
+		adjustMyLocationButton(mapView);
 		mMainPresenter.initLocationSettingsRequest();
 	}
 	
-	private LocationRequest createLocationRequest() {
-		mLocationRequest.setInterval(INTERVAL);
-		mLocationRequest.setFastestInterval(FAST_INTERVAL);
-		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-		return mLocationRequest;
+	private void adjustMyLocationButton(View mapView) {
+		if (mapView != null && mapView.findViewById(Integer.parseInt("1")) != null) {
+			// Get the button view
+			View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+			// and next place it, on bottom right (as Google Maps app)
+			RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
+			// position on right bottom
+			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+			layoutParams.setMargins(MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM);
+		}
 	}
 	
 	@Override
-	public void initLocationSettingsRequest() {
-		mLocationSettingsRequestBuilder.addLocationRequest(createLocationRequest());
-		Task<LocationSettingsResponse> task = mSettingsClient.checkLocationSettings(mLocationSettingsRequestBuilder.build());
-		task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-			@Override
-			public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-				mMainPresenter.getCurrentLocation();
-			}
-		}).addOnFailureListener(this, new OnFailureListener() {
-			@Override
-			public void onFailure(@NonNull Exception e) {
-				mMainPresenter.handleError(e);
-			}
-		});
-	}
-	
-	@Override
-	public void handleError(Exception e) {
+	public void handleCurrentLocationError(Exception e) {
 		if (e instanceof ResolvableApiException) {
 			// Location settings are not satisfied, but this can be fixed
 			// by showing the user a dialog.
@@ -142,52 +112,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		}
 	}
 	
-	@SuppressLint("MissingPermission")
-	@Override
-	public void getCurrentLocation() {
-		mFusedLocationProviderClient.getLastLocation()
-				.addOnSuccessListener(this, new OnSuccessListener<Location>() {
-					@Override
-					public void onSuccess(Location location) {
-						// Got last known location. In some rare situations this can be null.
-						if (location != null) {
-							// Logic to handle location object
-							mCurrentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-//							mMarker = mMap.addMarker(new MarkerOptions().position(mCurrentLatLng).title("your current location"));
-							CameraPosition cameraPosition = new CameraPosition.Builder()
-									.target(new LatLng(location.getLatitude(), location.getLongitude()))
-									.zoom(17)
-									.build();
-							mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 1000, null);
-						}
-						
-						mMainPresenter.startLocationUpdates();
-					}
-				});
-	}
-	
-	@SuppressLint("MissingPermission")
-	@Override
-	public void startLocationUpdates() {
-		LocationCallback locationCallback = new LocationCallback() {
-			@Override
-			public void onLocationResult(LocationResult locationResult) {
-				for (Location location : locationResult.getLocations()) {
-					//TODO: use location data later
-				}
-			}
-		};
-		
-		mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest, locationCallback , null);
-	}
-	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
 			case REQUEST_CHECK_SETTINGS:
 				switch (resultCode) {
 					case Activity.RESULT_OK:
-						mMainPresenter.getCurrentLocation();
+						mMainPresenter.initLocationSettingsRequest();
 						break;
 					case Activity.RESULT_CANCELED:
 						Toast.makeText(this, getString(R.string.location_error), Toast.LENGTH_SHORT).show();
@@ -197,5 +128,18 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				}
 				break;
 		}
+	}
+	
+	@Override
+	public void setCurrentLocation(Location location) {
+		// Logic to handle location object
+		CameraPosition cameraPosition = new CameraPosition.Builder()
+				.target(new LatLng(location.getLatitude(), location.getLongitude()))
+				.zoom(ZOOM_LEVEL)
+				.build();
+		mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), ANIMATION_PERIOD, null);
+		
+		mMainPresenter.startLocationUpdates();
+		
 	}
 }

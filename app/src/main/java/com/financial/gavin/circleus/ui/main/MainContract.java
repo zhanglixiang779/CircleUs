@@ -13,16 +13,12 @@ import com.google.android.gms.maps.model.Marker;
 public interface MainContract {
 	
 	interface View extends BaseView<Presenter> {
-		void initLocationSettingsRequest();
-		void getCurrentLocation();
-		void startLocationUpdates();
-		void handleError(Exception e);
+		void setCurrentLocation(Location location);
+		void handleCurrentLocationError(Exception e);
 	}
 	
 	interface Presenter extends BasePresenter<View> {
 		void initLocationSettingsRequest();
-		void getCurrentLocation();
 		void startLocationUpdates();
-		void handleError(Exception e);
 	}
 }
