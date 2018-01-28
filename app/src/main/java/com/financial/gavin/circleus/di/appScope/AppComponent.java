@@ -1,5 +1,8 @@
 package com.financial.gavin.circleus.di.appScope;
 
+import com.financial.gavin.circleus.CircleUsApplication;
+import com.financial.gavin.circleus.data.DataManagerImpl;
+import com.financial.gavin.circleus.data.api.GoogleApisImpl;
 import com.financial.gavin.circleus.di.activityScope.ActivityComponent;
 import com.financial.gavin.circleus.di.activityScope.GoogleServiceModule;
 import com.financial.gavin.circleus.di.activityScope.PresentersModule;
@@ -18,4 +21,6 @@ import dagger.Component;
 @Component(modules = {AppModule.class})
 public interface AppComponent {
 	ActivityComponent getActivityComponent(PresentersModule presentersModule, GoogleServiceModule googleServiceModule);
+	void inject(CircleUsApplication circleUsApplication);
+	void inject(DataManagerImpl dataManagerImpl);
 }

@@ -1,5 +1,6 @@
 package com.financial.gavin.circleus.di.activityScope;
 
+import com.financial.gavin.circleus.data.api.GoogleApisImpl;
 import com.financial.gavin.circleus.ui.main.MainActivity;
 import com.financial.gavin.circleus.ui.permission.PermissionsActivity;
 import com.financial.gavin.circleus.ui.splash.SplashActivity;
@@ -20,4 +21,5 @@ public interface ActivityComponent {
 	void inject(SplashActivity splashActivity);
 	void inject(PermissionsActivity permissionsActivity);
 	void inject(MainActivity mainActivity);
+	void inject(GoogleApisImpl googleApis);
 }
