@@ -4,16 +4,24 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.res.Resources;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSnapHelper;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SnapHelper;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.financial.gavin.circleus.CircleUsApplication;
 import com.financial.gavin.circleus.R;
+import com.financial.gavin.circleus.data.model.User;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -37,15 +45,15 @@ import com.google.android.gms.tasks.Task;
 
 import org.w3c.dom.ProcessingInstruction;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback, MainContract.View {
 	
-	
 	@Inject
 	MainContract.Presenter mMainPresenter;
 	
-	private GoogleMap mMap;
 	private static final int REQUEST_CHECK_SETTINGS = 100;
 	private static final int ZOOM_LEVEL = 17;
 	private static final int ANIMATION_PERIOD = 1000;
@@ -53,14 +61,23 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private static final int MARGIN_RIGHT = 30;
 	private static final int MARGIN_TOP = 0;
 	private static final int MARGIN_BOTTOM = 30;
+	private static final int PADDING_LEFT = 0;
+	private static final int PADDING_TOP = 0;
+	private static final int PADDING_RIGHT = 0;
+	private static final int PADDING_BOTTOM = 180;
+	
+	private GoogleMap mMap;
 	private View mapView;
+	private RecyclerView mRecyclerView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		CircleUsApplication.getInstance().getActivityComponent().inject(this);
+		mRecyclerView = findViewById(R.id.slider);
 		mMainPresenter.addView(this);
+		mMainPresenter.getUsers();
 		
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.map);
@@ -78,21 +95,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	public void onMapReady(GoogleMap googleMap) {
 		mMap = googleMap;
 		mMap.setMyLocationEnabled(true);
+		mMap.setPadding(PADDING_LEFT, PADDING_TOP, PADDING_RIGHT, dpToPx(PADDING_BOTTOM));
 		adjustMyLocationButton(mapView);
 		mMainPresenter.initLocationSettingsRequest();
-	}
-	
-	private void adjustMyLocationButton(View mapView) {
-		if (mapView != null && mapView.findViewById(Integer.parseInt("1")) != null) {
-			// Get the button view
-			View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-			// and next place it, on bottom right (as Google Maps app)
-			RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
-			// position on right bottom
-			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-			layoutParams.setMargins(MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM);
-		}
 	}
 	
 	@Override
@@ -140,6 +145,36 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), ANIMATION_PERIOD, null);
 		
 		mMainPresenter.startLocationUpdates();
-		
+	}
+	
+	@Override
+	public void updateSlider(List<User> users) {
+		SnapHelper snapHelper = new LinearSnapHelper();
+		snapHelper.attachToRecyclerView(mRecyclerView);
+		RecyclerView.LayoutManager layoutManager =
+				new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+		UserViewAdapter adapter = new UserViewAdapter(users, this);
+		mRecyclerView.setLayoutManager(layoutManager);
+		mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+		mRecyclerView.setAdapter(adapter);
+		mRecyclerView.scrollToPosition(Integer.MAX_VALUE /2);
+	}
+	
+	private void adjustMyLocationButton(View mapView) {
+		if (mapView != null && mapView.findViewById(Integer.parseInt("1")) != null) {
+			// Get the button view
+			View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+			// and next place it, on bottom right (as Google Maps app)
+			RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
+			// position on right bottom
+			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+			layoutParams.setMargins(MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM);
+		}
+	}
+	
+	private int dpToPx(int dp) {
+		Resources r = getResources();
+		return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
 	}
 }
