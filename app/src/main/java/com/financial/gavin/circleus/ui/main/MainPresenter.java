@@ -4,6 +4,10 @@ import android.location.Location;
 
 import com.financial.gavin.circleus.CircleUsApplication;
 import com.financial.gavin.circleus.data.DataManager;
+import com.financial.gavin.circleus.data.firebase.Mock;
+import com.financial.gavin.circleus.data.model.User;
+
+import java.util.List;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
@@ -44,6 +48,11 @@ public class MainPresenter implements MainContract.Presenter {
 		getDataManager().getGoogleApis().startLocationUpdates();
 	}
 	
+	@Override
+	public void getUsers() {
+		mMainView.updateSlider(new Mock().getUsers());
+	}
+	
 	public <T> Observer<T> getObserver() {
 		return new Observer<T>() {
 			@Override
@@ -60,7 +69,6 @@ public class MainPresenter implements MainContract.Presenter {
 				if (t instanceof Location) {
 					mMainView.setCurrentLocation((Location) t);
 				}
-				
 			}
 			
 			@Override

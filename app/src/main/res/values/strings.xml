@@ -8,4 +8,6 @@
     <string name="rationale_ask_cancel">Not Now</string>
 
     <string name="location_error">CircleUs unable to share real-time location, please turn the location on.</string>
+    <string name="list_view_name">Name:</string>
+    <string name="list_view_phone">Phone:</string>
 </resources>
