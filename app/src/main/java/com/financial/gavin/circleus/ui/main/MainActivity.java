@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -27,10 +28,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.SphericalUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -54,6 +59,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private static final int PADDING_TOP = 0;
 	private static final int PADDING_RIGHT = 0;
 	private static final int PADDING_BOTTOM = 180;
+	private static final int HSV_ALPHA = 70;
+	private static final int HSV_HUE = 123;
+	private static final float HSV_SATURATION = 0.6f;
+	private static final float HSV_VALUE = 0.56f;
 	
 	private GoogleMap mMap;
 	private View mapView;
@@ -88,6 +97,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		adjustMyLocationButton(mapView);
 		mMainPresenter.initLocationSettingsRequest();
 		users = mMainPresenter.getUsers();
+		
 		//This call is invoked after the map layout is complete
 		mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
 			@Override
@@ -98,7 +108,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 							.title(user.getName()));
 					mBoundsBuilder.include(user.getLatLng());
 				}
-				mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mBoundsBuilder.build().getCenter(), ZOOM_LEVEL));
+				LatLng center = mBoundsBuilder.build().getCenter();
+				int fillColor = Color.HSVToColor(HSV_ALPHA, new float[]{HSV_HUE, HSV_SATURATION, HSV_VALUE});
+				CircleOptions circleOptions = new CircleOptions()
+						.fillColor(fillColor)
+						.strokeColor(Color.TRANSPARENT)
+						.center(center)
+						.radius(computeCircleRadius(users, center));
+				mMap.addCircle(circleOptions);
+				mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, ZOOM_LEVEL));
 			}
 		});
 	}
@@ -169,7 +187,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				LatLng latLng = user.getLatLng();
 				CameraPosition cameraPosition = new CameraPosition.Builder()
 						.target(latLng)
-						.zoom(INDIVIDUAL_ZOOM_LEVEL)
+						.zoom(ZOOM_LEVEL)
 						.build();
 				mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), ANIMATION_PERIOD, null);
 			}
@@ -192,5 +210,20 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private int dpToPx(int dp) {
 		Resources r = getResources();
 		return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
+	}
+	
+	private double computeCircleRadius(List<User> users, LatLng center) {
+		double radius = 0;
+		List<LatLng> latLngs = new ArrayList<>();
+		
+		for (User user : users) {
+			latLngs.add(user.getLatLng());
+		}
+		
+		for (LatLng latlng : latLngs) {
+			double distance = SphericalUtil.computeDistanceBetween(latlng, center);
+			radius = radius > distance ? radius : distance;
+		}
+		return radius;
 	}
 }
