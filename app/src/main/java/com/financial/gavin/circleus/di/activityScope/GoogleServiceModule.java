@@ -8,6 +8,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 
 import dagger.Module;
 import dagger.Provides;
@@ -41,4 +42,11 @@ public class GoogleServiceModule {
 	FusedLocationProviderClient providesFusedLocationProviderClient(Context context) {
 		return LocationServices.getFusedLocationProviderClient(context);
 	}
+	
+	@ActivityScope
+	@Provides
+	LatLngBounds.Builder providesLatLngBoundsBuilder() {
+		return new LatLngBounds.Builder();
+	}
+	
 }
