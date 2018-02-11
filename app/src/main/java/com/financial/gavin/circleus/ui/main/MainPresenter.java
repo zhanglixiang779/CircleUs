@@ -7,6 +7,7 @@ import com.financial.gavin.circleus.data.DataManager;
 import com.financial.gavin.circleus.data.firebase.Mock;
 import com.financial.gavin.circleus.data.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observer;
@@ -49,11 +50,13 @@ public class MainPresenter implements MainContract.Presenter {
 	}
 	
 	@Override
-	public void getUsers() {
-		mMainView.updateSlider(new Mock().getUsers());
+	public List<User> getUsers() {
+		List<User> users = new Mock().getUsers();
+		mMainView.updateSlider(users);
+		return users;
 	}
 	
-	public <T> Observer<T> getObserver() {
+	private  <T> Observer<T> getObserver() {
 		return new Observer<T>() {
 			@Override
 			public void onSubscribe(Disposable d) {
@@ -67,8 +70,10 @@ public class MainPresenter implements MainContract.Presenter {
 				}
 				
 				if (t instanceof Location) {
-					mMainView.setCurrentLocation((Location) t);
+//					mMainView.setCurrentLocation((Location) t);
+					//TODO: Send the real time location to firebase
 				}
+				
 			}
 			
 			@Override

@@ -24,6 +24,6 @@ public interface MainContract {
 	interface Presenter extends BasePresenter<View> {
 		void initLocationSettingsRequest();
 		void startLocationUpdates();
-		void getUsers();
+		List<User> getUsers();
 	}
 }

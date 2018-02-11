@@ -69,7 +69,9 @@ public class GoogleApisImpl implements GoogleApis {
 		task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
 			@Override
 			public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-				getCurrentLocation();
+//				getCurrentLocation();
+//				directly call startLocationUpdates instead of getCurrentLocation();
+				startLocationUpdates();
 			}
 		}).addOnFailureListener(new OnFailureListener() {
 			@Override
@@ -91,12 +93,9 @@ public class GoogleApisImpl implements GoogleApis {
 					public void onSuccess(Location location) {
 						// Got last known location. In some rare situations this can be null.
 						if (location != null) {
-							Observable.just(location)
-									.subscribeOn(Schedulers.io())
-									.observeOn(AndroidSchedulers.mainThread())
-									.subscribe(mObserver);
+							getObservable(location).subscribe(mObserver);
 						} else {
-							getCurrentLocation();
+							getObservable(new NullPointerException()).subscribe(mObserver);
 						}
 					}
 				});
@@ -109,7 +108,7 @@ public class GoogleApisImpl implements GoogleApis {
 			@Override
 			public void onLocationResult(LocationResult locationResult) {
 				for (Location location : locationResult.getLocations()) {
-					//TODO: use location data later
+					getObservable(location).subscribe(mObserver);
 				}
 			}
 		};
@@ -120,5 +119,11 @@ public class GoogleApisImpl implements GoogleApis {
 	@Override
 	public <T> void setObserver(Observer<T> t) {
 		mObserver = t;
+	}
+	
+	private <T> Observable<T> getObservable(T t) {
+		return Observable.just(t)
+				.subscribeOn(Schedulers.io())
+				.observeOn(AndroidSchedulers.mainThread());
 	}
 }

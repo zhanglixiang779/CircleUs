@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.res.Resources;
 import android.location.Location;
-import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -23,27 +22,14 @@ import com.financial.gavin.circleus.CircleUsApplication;
 import com.financial.gavin.circleus.R;
 import com.financial.gavin.circleus.data.model.User;
 import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.LocationSettingsStates;
-import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-
-import org.w3c.dom.ProcessingInstruction;
 
 import java.util.List;
 
@@ -53,9 +39,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	
 	@Inject
 	MainContract.Presenter mMainPresenter;
+	@Inject
+	LatLngBounds.Builder mBoundsBuilder;
 	
 	private static final int REQUEST_CHECK_SETTINGS = 100;
-	private static final int ZOOM_LEVEL = 17;
+	private static final int INDIVIDUAL_ZOOM_LEVEL = 15;
+	private static final int ZOOM_LEVEL = 12;
 	private static final int ANIMATION_PERIOD = 1000;
 	private static final int MARGIN_LEFT = 0;
 	private static final int MARGIN_RIGHT = 30;
@@ -69,6 +58,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private GoogleMap mMap;
 	private View mapView;
 	private RecyclerView mRecyclerView;
+	private List<User> users;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +67,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		CircleUsApplication.getInstance().getActivityComponent().inject(this);
 		mRecyclerView = findViewById(R.id.slider);
 		mMainPresenter.addView(this);
-		mMainPresenter.getUsers();
 		
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.map);
@@ -98,6 +87,20 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		mMap.setPadding(PADDING_LEFT, PADDING_TOP, PADDING_RIGHT, dpToPx(PADDING_BOTTOM));
 		adjustMyLocationButton(mapView);
 		mMainPresenter.initLocationSettingsRequest();
+		users = mMainPresenter.getUsers();
+		//This call is invoked after the map layout is complete
+		mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+			@Override
+			public void onMapLoaded() {
+				for (User user : users) {
+					mMap.addMarker(new MarkerOptions()
+							.position(user.getLatLng())
+							.title(user.getName()));
+					mBoundsBuilder.include(user.getLatLng());
+				}
+				mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mBoundsBuilder.build().getCenter(), ZOOM_LEVEL));
+			}
+		});
 	}
 	
 	@Override
@@ -140,15 +143,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		// Logic to handle location object
 		CameraPosition cameraPosition = new CameraPosition.Builder()
 				.target(new LatLng(location.getLatitude(), location.getLongitude()))
-				.zoom(ZOOM_LEVEL)
+				.zoom(INDIVIDUAL_ZOOM_LEVEL)
 				.build();
 		mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), ANIMATION_PERIOD, null);
-		
-		mMainPresenter.startLocationUpdates();
 	}
 	
 	@Override
-	public void updateSlider(List<User> users) {
+	public void updateSlider(final List<User> users) {
 		SnapHelper snapHelper = new LinearSnapHelper();
 		snapHelper.attachToRecyclerView(mRecyclerView);
 		RecyclerView.LayoutManager layoutManager =
@@ -158,6 +159,21 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 		mRecyclerView.setAdapter(adapter);
 		mRecyclerView.scrollToPosition(Integer.MAX_VALUE /2);
+		mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+			@Override
+			public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+				super.onScrollStateChanged(recyclerView, newState);
+				LinearLayoutManager lm = (LinearLayoutManager)recyclerView.getLayoutManager();
+				int position = lm.findFirstCompletelyVisibleItemPosition();
+				User user = users.get(position % users.size());
+				LatLng latLng = user.getLatLng();
+				CameraPosition cameraPosition = new CameraPosition.Builder()
+						.target(latLng)
+						.zoom(INDIVIDUAL_ZOOM_LEVEL)
+						.build();
+				mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), ANIMATION_PERIOD, null);
+			}
+		});
 	}
 	
 	private void adjustMyLocationButton(View mapView) {
