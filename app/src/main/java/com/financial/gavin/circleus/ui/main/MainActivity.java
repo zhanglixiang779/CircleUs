@@ -16,6 +16,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -23,6 +24,11 @@ import com.financial.gavin.circleus.CircleUsApplication;
 import com.financial.gavin.circleus.R;
 import com.financial.gavin.circleus.data.model.User;
 import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
+import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -32,6 +38,7 @@ import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.SphericalUtil;
 
@@ -46,6 +53,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	MainContract.Presenter mMainPresenter;
 	@Inject
 	LatLngBounds.Builder mBoundsBuilder;
+	@Inject
+	List<Marker> mUserMarkers;
 	
 	private static final int REQUEST_CHECK_SETTINGS = 100;
 	private static final int INDIVIDUAL_ZOOM_LEVEL = 15;
@@ -65,8 +74,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private static final float HSV_VALUE = 0.56f;
 	
 	private GoogleMap mMap;
+	private SupportPlaceAutocompleteFragment autocompleteFragment;
+	private Marker mDestMarker;
 	private View mapView;
 	private RecyclerView mRecyclerView;
+	private Button mDestButton;
 	private List<User> users;
 	
 	@Override
@@ -75,11 +87,44 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		setContentView(R.layout.activity_main);
 		CircleUsApplication.getInstance().getActivityComponent().inject(this);
 		mRecyclerView = findViewById(R.id.slider);
+		mDestButton = findViewById(R.id.change_destination_btn);
+		mDestButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				autocompleteFragment.getView().setVisibility(View.VISIBLE);
+				mDestButton.setVisibility(View.GONE);
+			}
+		});
 		mMainPresenter.addView(this);
 		
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.map);
 		mapFragment.getMapAsync(this);
+		
+		autocompleteFragment = (SupportPlaceAutocompleteFragment)
+				getSupportFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+		autocompleteFragment.setHint(getString(R.string.auto_complete_hint));
+		autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+			@Override
+			public void onPlaceSelected(Place place) {
+				//TODO: will implement place picker here for user to confirm
+				mDestButton.setVisibility(View.VISIBLE);
+				autocompleteFragment.getView().setVisibility(View.GONE);
+				if (mDestMarker != null) {
+					mDestMarker.remove();
+				}
+				mDestMarker = mMap.addMarker(new MarkerOptions()
+									.title(String.valueOf(place.getName()))
+									.position(place.getLatLng()));
+				mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), ZOOM_LEVEL));
+			}
+			
+			@Override
+			public void onError(Status status) {
+				Toast.makeText(MainActivity.this, status.getStatusMessage(), Toast.LENGTH_SHORT).show();
+			}
+		});
+		
 		mapView = mapFragment.getView();
 	}
 	
@@ -103,9 +148,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			@Override
 			public void onMapLoaded() {
 				for (User user : users) {
-					mMap.addMarker(new MarkerOptions()
+					Marker userMarker = mMap.addMarker(new MarkerOptions()
 							.position(user.getLatLng())
 							.title(user.getName()));
+					userMarker.setTag(user.getName());
+					mUserMarkers.add(userMarker);
 					mBoundsBuilder.include(user.getLatLng());
 				}
 				LatLng center = mBoundsBuilder.build().getCenter();
@@ -140,6 +187,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		//These two lines are necessary for auto complete fragment to work with map fragment together.
+		super.onActivityResult(requestCode, resultCode, data);
+		autocompleteFragment.onActivityResult(requestCode, resultCode, data);
+		
 		switch (requestCode) {
 			case REQUEST_CHECK_SETTINGS:
 				switch (resultCode) {
@@ -189,6 +240,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 						.target(latLng)
 						.zoom(ZOOM_LEVEL)
 						.build();
+				matchUserWithMarker(user);
+				
 				mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), ANIMATION_PERIOD, null);
 			}
 		});
@@ -204,6 +257,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
 			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
 			layoutParams.setMargins(MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM);
+		}
+	}
+	
+	private void matchUserWithMarker(User user) {
+		for (Marker userMarker : mUserMarkers) {
+			if (userMarker.getTag().equals(user.getName())) {
+				userMarker.showInfoWindow();
+			}
 		}
 	}
 	
