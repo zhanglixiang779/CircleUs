@@ -7,6 +7,10 @@ import com.financial.gavin.circleus.data.DataManager;
 import com.financial.gavin.circleus.data.DataManagerImpl;
 import com.financial.gavin.circleus.data.api.GoogleApis;
 import com.financial.gavin.circleus.data.api.GoogleApisImpl;
+import com.google.android.gms.maps.model.Marker;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Singleton;
 
@@ -43,5 +47,11 @@ public class AppModule {
 	@Provides
 	GoogleApis providesGoogleApis() {
 		return new GoogleApisImpl();
+	}
+	
+	@Singleton
+	@Provides
+	List<Marker> providesUserMarkers() {
+		return new ArrayList<>();
 	}
 }
