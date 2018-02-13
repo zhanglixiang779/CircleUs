@@ -69,7 +69,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private static final int PADDING_LEFT = 0;
 	private static final int PADDING_TOP = 0;
 	private static final int PADDING_RIGHT = 0;
-	private static final int PADDING_BOTTOM = 180;
+	private static final int PADDING_BOTTOM = 170;
 	private static final int HSV_ALPHA = 70;
 	private static final int HSV_HUE = 123;
 	private static final float HSV_SATURATION = 0.6f;
