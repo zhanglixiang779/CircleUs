@@ -47,7 +47,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback, MainContract.View {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback,
+						MainContract.View, View.OnClickListener, PlaceSelectionListener,
+						GoogleMap.OnMapLoadedCallback {
 	
 	@Inject
 	MainContract.Presenter mMainPresenter;
@@ -88,13 +90,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		CircleUsApplication.getInstance().getActivityComponent().inject(this);
 		mRecyclerView = findViewById(R.id.slider);
 		mDestButton = findViewById(R.id.change_destination_btn);
-		mDestButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				autocompleteFragment.getView().setVisibility(View.VISIBLE);
-				mDestButton.setVisibility(View.GONE);
-			}
-		});
+		mDestButton.setOnClickListener(this);
 		mMainPresenter.addView(this);
 		
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -104,26 +100,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		autocompleteFragment = (SupportPlaceAutocompleteFragment)
 				getSupportFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 		autocompleteFragment.setHint(getString(R.string.auto_complete_hint));
-		autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-			@Override
-			public void onPlaceSelected(Place place) {
-				//TODO: will implement place picker here for user to confirm
-				mDestButton.setVisibility(View.VISIBLE);
-				autocompleteFragment.getView().setVisibility(View.GONE);
-				if (mDestMarker != null) {
-					mDestMarker.remove();
-				}
-				mDestMarker = mMap.addMarker(new MarkerOptions()
-									.title(String.valueOf(place.getName()))
-									.position(place.getLatLng()));
-				mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), ZOOM_LEVEL));
-			}
-			
-			@Override
-			public void onError(Status status) {
-				Toast.makeText(MainActivity.this, status.getStatusMessage(), Toast.LENGTH_SHORT).show();
-			}
-		});
+		autocompleteFragment.setOnPlaceSelectedListener(this);
 		
 		mapView = mapFragment.getView();
 	}
@@ -144,28 +121,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		users = mMainPresenter.getUsers();
 		
 		//This call is invoked after the map layout is complete
-		mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
-			@Override
-			public void onMapLoaded() {
-				for (User user : users) {
-					Marker userMarker = mMap.addMarker(new MarkerOptions()
-							.position(user.getLatLng())
-							.title(user.getName()));
-					userMarker.setTag(user.getName());
-					mUserMarkers.add(userMarker);
-					mBoundsBuilder.include(user.getLatLng());
-				}
-				LatLng center = mBoundsBuilder.build().getCenter();
-				int fillColor = Color.HSVToColor(HSV_ALPHA, new float[]{HSV_HUE, HSV_SATURATION, HSV_VALUE});
-				CircleOptions circleOptions = new CircleOptions()
-						.fillColor(fillColor)
-						.strokeColor(Color.TRANSPARENT)
-						.center(center)
-						.radius(computeCircleRadius(users, center));
-				mMap.addCircle(circleOptions);
-				mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, ZOOM_LEVEL));
-			}
-		});
+		mMap.setOnMapLoadedCallback(this);
 	}
 	
 	@Override
@@ -204,12 +160,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 						break;
 				}
 				break;
+			default:
+				break;
 		}
 	}
 	
 	@Override
 	public void setCurrentLocation(Location location) {
-		// Logic to handle location object
 		CameraPosition cameraPosition = new CameraPosition.Builder()
 				.target(new LatLng(location.getLatitude(), location.getLongitude()))
 				.zoom(INDIVIDUAL_ZOOM_LEVEL)
@@ -245,6 +202,63 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), ANIMATION_PERIOD, null);
 			}
 		});
+	}
+	
+	/**
+	 * Handle OnClick listener
+	 * @param view
+	 */
+	@Override
+	public void onClick(View view) {
+		autocompleteFragment.getView().setVisibility(View.VISIBLE);
+		mDestButton.setVisibility(View.GONE);
+	}
+	
+	/**
+	 * Handle OnPlaceSelectedListener
+	 * @param place
+	 */
+	@Override
+	public void onPlaceSelected(Place place) {
+		//TODO: will implement place picker here for user to confirm
+		mDestButton.setVisibility(View.VISIBLE);
+		autocompleteFragment.getView().setVisibility(View.GONE);
+		if (mDestMarker != null) {
+			mDestMarker.remove();
+		}
+		mDestMarker = mMap.addMarker(new MarkerOptions()
+				.title(String.valueOf(place.getName()))
+				.position(place.getLatLng()));
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), ZOOM_LEVEL));
+	}
+	
+	@Override
+	public void onError(Status status) {
+		Toast.makeText(MainActivity.this, status.getStatusMessage(), Toast.LENGTH_SHORT).show();
+	}
+	
+	/**
+	 * Handle OnMapLoadedCallback
+	 */
+	@Override
+	public void onMapLoaded() {
+		for (User user : users) {
+			Marker userMarker = mMap.addMarker(new MarkerOptions()
+					.position(user.getLatLng())
+					.title(user.getName()));
+			userMarker.setTag(user.getName());
+			mUserMarkers.add(userMarker);
+			mBoundsBuilder.include(user.getLatLng());
+		}
+		LatLng center = mBoundsBuilder.build().getCenter();
+		int fillColor = Color.HSVToColor(HSV_ALPHA, new float[]{HSV_HUE, HSV_SATURATION, HSV_VALUE});
+		CircleOptions circleOptions = new CircleOptions()
+				.fillColor(fillColor)
+				.strokeColor(Color.TRANSPARENT)
+				.center(center)
+				.radius(computeCircleRadius(users, center));
+		mMap.addCircle(circleOptions);
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, ZOOM_LEVEL));
 	}
 	
 	private void adjustMyLocationButton(View mapView) {
