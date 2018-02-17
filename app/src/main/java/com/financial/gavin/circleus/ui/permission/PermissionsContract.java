@@ -11,12 +11,11 @@ public interface PermissionsContract {
 	
 	interface View extends BaseView<Presenter> {
 		void startMainActivity();
-		void requestLocationPermission();
+		void requestPermissions();
 	}
 	
 	interface Presenter extends BasePresenter<View> {
 		void startMainActivity();
-		void requestLocationPermission();
+		void requestPermissions();
 	}
-	
 }

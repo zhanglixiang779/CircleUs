@@ -2,12 +2,17 @@
     <string name="app_name">CircleUs</string>
     <string name="title_activity_main">CircleUs</string>
 
-    <!--Location permission-->
-    <string name="location_rationale">CircleUs needs to know your location to function properly.</string>
-    <string name="rationale_ask_ok">Proceed</string>
-    <string name="rationale_ask_cancel">Not Now</string>
+    <!--Permissions-->
+    <string name="dialog_title">Need Permissions</string>
+    <string name="dialog_message">This app needs all permissions granted to use the full features. You can grant them in app settings.</string>
+    <string name="dialog_positive_button">Go to settings</string>
+    <string name="dialog_negative_button">Cancel</string>
 
+    <!--Error Messages-->
     <string name="location_error">CircleUs unable to share real-time location, please turn the location on.</string>
+    <string name="over_lay_settings_error">This permission is necessary to use this app!</string>
+
+
     <string name="list_view_name">Name:</string>
     <string name="list_view_phone">Phone:</string>
     <string name="change_destination_button">Change Destination</string>
