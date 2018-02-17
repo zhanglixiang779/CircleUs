@@ -24,7 +24,7 @@ public class PermissionsPresenter implements PermissionsContract.Presenter {
 	}
 	
 	@Override
-	public void requestLocationPermission() {
-		mPermissionView.requestLocationPermission();
+	public void requestPermissions() {
+		mPermissionView.requestPermissions();
 	}
 }
