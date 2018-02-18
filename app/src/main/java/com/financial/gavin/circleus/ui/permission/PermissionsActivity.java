@@ -57,7 +57,8 @@ public class PermissionsActivity extends AppCompatActivity implements Permission
 					public void onPermissionsChecked(MultiplePermissionsReport report) {
 						if (report.areAllPermissionsGranted() && !isPermissionsChecked) {
 							isPermissionsChecked = true;
-							openDrawOverlaySettings();
+							mPermissionsPresenter.startMainActivity();
+//							openDrawOverlaySettings();
 						}
 					}
 					

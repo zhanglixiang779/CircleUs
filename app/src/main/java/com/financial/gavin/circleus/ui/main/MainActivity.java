@@ -14,6 +14,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
@@ -32,7 +33,11 @@ import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragmen
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.OnStreetViewPanoramaReadyCallback;
+import com.google.android.gms.maps.StreetViewPanorama;
+import com.google.android.gms.maps.StreetViewPanoramaFragment;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.SupportStreetViewPanoramaFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -41,14 +46,15 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.SphericalUtil;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback,
-						MainContract.View, View.OnClickListener, PlaceSelectionListener,
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback, OnStreetViewPanoramaReadyCallback,
+						MainContract.View, View.OnClickListener, PlaceSelectionListener, GoogleMap.OnMarkerClickListener,
 						GoogleMap.OnMapLoadedCallback {
 	
 	@Inject
@@ -57,6 +63,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	LatLngBounds.Builder mBoundsBuilder;
 	@Inject
 	List<Marker> mUserMarkers;
+	
+	private LatLng mDestination;
 	
 	private static final int REQUEST_CHECK_SETTINGS = 100;
 	private static final int INDIVIDUAL_ZOOM_LEVEL = 15;
@@ -77,7 +85,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	
 	private GoogleMap mMap;
 	private SupportPlaceAutocompleteFragment autocompleteFragment;
+	private SupportStreetViewPanoramaFragment streetViewPanoramaFragment;
 	private Marker mDestMarker;
+	private SlidingUpPanelLayout mSlidingUpPanelLayout;
 	private View mapView;
 	private RecyclerView mRecyclerView;
 	private Button mDestButton;
@@ -90,6 +100,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		CircleUsApplication.getInstance().getActivityComponent().inject(this);
 		mRecyclerView = findViewById(R.id.slider);
 		mDestButton = findViewById(R.id.change_destination_btn);
+		mSlidingUpPanelLayout = findViewById(R.id.sliding_layout);
 		mDestButton.setOnClickListener(this);
 		mMainPresenter.addView(this);
 		
@@ -101,6 +112,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				getSupportFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 		autocompleteFragment.setHint(getString(R.string.auto_complete_hint));
 		autocompleteFragment.setOnPlaceSelectedListener(this);
+		
+		streetViewPanoramaFragment =
+				(SupportStreetViewPanoramaFragment) getSupportFragmentManager()
+						.findFragmentById(R.id.street_view_panorama);
 		
 		mapView = mapFragment.getView();
 	}
@@ -122,6 +137,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		
 		//This call is invoked after the map layout is complete
 		mMap.setOnMapLoadedCallback(this);
+		mMap.setOnMarkerClickListener(this);
 	}
 	
 	@Override
@@ -259,6 +275,21 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				.radius(computeCircleRadius(users, center));
 		mMap.addCircle(circleOptions);
 		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, ZOOM_LEVEL));
+	}
+	
+	@Override
+	public void onStreetViewPanoramaReady(StreetViewPanorama streetViewPanorama) {
+		if (streetViewPanorama != null) {
+			streetViewPanorama.setPosition(mDestination);
+			mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+		}
+	}
+	
+	@Override
+	public boolean onMarkerClick(Marker marker) {
+		mDestination = marker.getPosition();
+		streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
+		return false;
 	}
 	
 	private void adjustMyLocationButton(View mapView) {
