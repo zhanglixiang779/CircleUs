@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "470344338134",
+    "firebase_url": "https://circleus-gavin-zhang.firebaseio.com",
+    "project_id": "circleus-gavin-zhang",
+    "storage_bucket": "circleus-gavin-zhang.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:470344338134:android:0238dff2d106aafd",
+        "android_client_info": {
+          "package_name": "com.financial.gavin.circleus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "470344338134-3m6u5asnvt38j7f1q266vr3doikme13r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.financial.gavin.circleus",
+            "certificate_hash": "c9944ab19e88443505e0ca957c7a76b3044b233c"
+          }
+        },
+        {
+          "client_id": "470344338134-idgsjprt3uv4o0rkdr1qbrjl5lo5a8fl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPzypBL3q4xHOgpAW3CLFJm3ARWOhafXs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "470344338134-idgsjprt3uv4o0rkdr1qbrjl5lo5a8fl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
