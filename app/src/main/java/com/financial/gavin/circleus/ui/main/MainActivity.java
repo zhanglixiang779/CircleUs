@@ -14,7 +14,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
@@ -27,7 +26,6 @@ import com.financial.gavin.circleus.data.model.User;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -35,9 +33,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.OnStreetViewPanoramaReadyCallback;
 import com.google.android.gms.maps.StreetViewPanorama;
-import com.google.android.gms.maps.StreetViewPanoramaFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.SupportStreetViewPanoramaFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -60,11 +58,21 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	@Inject
 	MainContract.Presenter mMainPresenter;
 	@Inject
-	LatLngBounds.Builder mBoundsBuilder;
-	@Inject
 	List<Marker> mUserMarkers;
+	@Inject
+	List<LatLng> mLatLngList;
 	
-	private LatLng mDestination;
+	private GoogleMap mMap;
+	private Circle mCircle;
+	private SupportPlaceAutocompleteFragment autocompleteFragment;
+	private SupportStreetViewPanoramaFragment streetViewPanoramaFragment;
+	private Marker mDestMarker;
+	private SlidingUpPanelLayout mSlidingUpPanelLayout;
+	private View mapView;
+	private RecyclerView mRecyclerView;
+	private Button mDestButton;
+	private List<User> users;
+	private LatLng mSelectedMarkerLatLng;
 	
 	private static final int REQUEST_CHECK_SETTINGS = 100;
 	private static final int INDIVIDUAL_ZOOM_LEVEL = 15;
@@ -82,16 +90,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private static final int HSV_HUE = 123;
 	private static final float HSV_SATURATION = 0.6f;
 	private static final float HSV_VALUE = 0.56f;
-	
-	private GoogleMap mMap;
-	private SupportPlaceAutocompleteFragment autocompleteFragment;
-	private SupportStreetViewPanoramaFragment streetViewPanoramaFragment;
-	private Marker mDestMarker;
-	private SlidingUpPanelLayout mSlidingUpPanelLayout;
-	private View mapView;
-	private RecyclerView mRecyclerView;
-	private Button mDestButton;
-	private List<User> users;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -241,11 +239,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		autocompleteFragment.getView().setVisibility(View.GONE);
 		if (mDestMarker != null) {
 			mDestMarker.remove();
+			mLatLngList.remove(mLatLngList.size() - 1);
 		}
 		mDestMarker = mMap.addMarker(new MarkerOptions()
+				.icon(BitmapDescriptorFactory.fromResource(R.drawable.destination_marker))
 				.title(String.valueOf(place.getName()))
 				.position(place.getLatLng()));
-		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), ZOOM_LEVEL));
+		mLatLngList.add(mDestMarker.getPosition());
+		circleUs(mLatLngList);
 	}
 	
 	@Override
@@ -264,32 +265,46 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 					.title(user.getName()));
 			userMarker.setTag(user.getName());
 			mUserMarkers.add(userMarker);
-			mBoundsBuilder.include(user.getLatLng());
+			mLatLngList.add(userMarker.getPosition());
 		}
-		LatLng center = mBoundsBuilder.build().getCenter();
-		int fillColor = Color.HSVToColor(HSV_ALPHA, new float[]{HSV_HUE, HSV_SATURATION, HSV_VALUE});
-		CircleOptions circleOptions = new CircleOptions()
-				.fillColor(fillColor)
-				.strokeColor(Color.TRANSPARENT)
-				.center(center)
-				.radius(computeCircleRadius(users, center));
-		mMap.addCircle(circleOptions);
-		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, ZOOM_LEVEL));
+		circleUs(mLatLngList);
 	}
 	
 	@Override
 	public void onStreetViewPanoramaReady(StreetViewPanorama streetViewPanorama) {
 		if (streetViewPanorama != null) {
-			streetViewPanorama.setPosition(mDestination);
+			streetViewPanorama.setPosition(mSelectedMarkerLatLng);
 			mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
 		}
 	}
 	
 	@Override
 	public boolean onMarkerClick(Marker marker) {
-		mDestination = marker.getPosition();
+		mSelectedMarkerLatLng = marker.getPosition();
 		streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
 		return false;
+	}
+	
+	private void circleUs(List<LatLng> latLngList) {
+		if (mCircle != null) {
+			mCircle.remove();
+		}
+		
+		LatLngBounds.Builder latLngBoundsBuilder = new LatLngBounds.Builder();
+		for (LatLng latlng : latLngList) {
+			latLngBoundsBuilder.include(latlng);
+		}
+		
+		LatLng center = latLngBoundsBuilder.build().getCenter();
+		int fillColor = Color.HSVToColor(HSV_ALPHA, new float[]{HSV_HUE, HSV_SATURATION, HSV_VALUE});
+		CircleOptions circleOptions = new CircleOptions()
+				.fillColor(fillColor)
+				.strokeColor(Color.TRANSPARENT)
+				.center(center)
+				.radius(computeCircleRadius(latLngList, center));
+		mCircle = mMap.addCircle(circleOptions);
+//		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, ZOOM_LEVEL));
+		mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBoundsBuilder.build(), dpToPx(16)));
 	}
 	
 	private void adjustMyLocationButton(View mapView) {
@@ -318,13 +333,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
 	}
 	
-	private double computeCircleRadius(List<User> users, LatLng center) {
+	private double computeCircleRadius(List<LatLng> latLngs, LatLng center) {
 		double radius = 0;
-		List<LatLng> latLngs = new ArrayList<>();
-		
-		for (User user : users) {
-			latLngs.add(user.getLatLng());
-		}
 		
 		for (LatLng latlng : latLngs) {
 			double distance = SphericalUtil.computeDistanceBetween(latlng, center);

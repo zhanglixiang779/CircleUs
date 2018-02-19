@@ -7,6 +7,7 @@ import com.financial.gavin.circleus.data.DataManager;
 import com.financial.gavin.circleus.data.DataManagerImpl;
 import com.financial.gavin.circleus.data.api.GoogleApis;
 import com.financial.gavin.circleus.data.api.GoogleApisImpl;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
 import java.util.ArrayList;
@@ -52,6 +53,12 @@ public class AppModule {
 	@Singleton
 	@Provides
 	List<Marker> providesUserMarkers() {
+		return new ArrayList<>();
+	}
+	
+	@Singleton
+	@Provides
+	List<LatLng> providesLatLngList() {
 		return new ArrayList<>();
 	}
 }

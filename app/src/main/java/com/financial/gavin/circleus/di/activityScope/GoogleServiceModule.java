@@ -42,11 +42,4 @@ public class GoogleServiceModule {
 	FusedLocationProviderClient providesFusedLocationProviderClient(Context context) {
 		return LocationServices.getFusedLocationProviderClient(context);
 	}
-	
-	@ActivityScope
-	@Provides
-	LatLngBounds.Builder providesLatLngBoundsBuilder() {
-		return new LatLngBounds.Builder();
-	}
-	
 }
