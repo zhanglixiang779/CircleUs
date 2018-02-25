@@ -136,7 +136,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		mMap = googleMap;
-		mMap.setMyLocationEnabled(true);
+		mMap.setMyLocationEnabled(false);
 		mMap.setPadding(PADDING_LEFT, PADDING_TOP, PADDING_RIGHT, dpToPx(PADDING_BOTTOM));
 		adjustMyLocationButton(mapView);
 		mMainPresenter.initLocationSettingsRequest();
@@ -218,7 +218,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				LatLng latLng = new LatLng(user.getLatitude(), user.getLongitude());
 				CameraPosition cameraPosition = new CameraPosition.Builder()
 						.target(latLng)
-						.zoom(ZOOM_LEVEL)
+						.zoom(INDIVIDUAL_ZOOM_LEVEL)
 						.build();
 				matchUserWithMarker(user);
 				
@@ -320,8 +320,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	
 	@Override
 	public boolean onMarkerClick(Marker marker) {
-		mSelectedMarkerLatLng = marker.getPosition();
-		streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
+		if (marker.equals(mDestMarker)) {
+			mSelectedMarkerLatLng = marker.getPosition();
+			streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
+		}
 		return false;
 	}
 	
