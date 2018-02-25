@@ -19,6 +19,7 @@
     <string name="register">Register</string>
     <string name="create_group">Create a Group</string>
     <string name="group_chat">Group Chat</string>
+    <string name="panorama_view">Panorama View</string>
 
     <string name="list_view_name">Name:</string>
     <string name="list_view_phone">Phone:</string>
