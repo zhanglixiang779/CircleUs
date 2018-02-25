@@ -23,6 +23,8 @@ import android.widget.Toast;
 import com.financial.gavin.circleus.CircleUsApplication;
 import com.financial.gavin.circleus.R;
 import com.financial.gavin.circleus.data.model.User;
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
@@ -70,6 +72,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private View mapView;
 	private RecyclerView mRecyclerView;
 	private Button mDestButton;
+	private FloatingActionMenu mClickHereFabMenu;
+	private FloatingActionButton mCreateGroupFab, mAddFriendFab, mGroupChatFab, mRegisterFab;
 	private List<User> mUsers;
 	private LatLng mSelectedMarkerLatLng;
 	
@@ -98,8 +102,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		mRecyclerView = findViewById(R.id.slider);
 		mDestButton = findViewById(R.id.change_destination_btn);
 		mSlidingUpPanelLayout = findViewById(R.id.sliding_layout);
-		mDestButton.setOnClickListener(this);
+		mClickHereFabMenu = findViewById(R.id.click_here_fab_menu);
+		mRegisterFab = findViewById(R.id.register_fab);
+		mAddFriendFab = findViewById(R.id.add_user_fab);
+		mCreateGroupFab = findViewById(R.id.create_group_fab);
+		mGroupChatFab = findViewById(R.id.group_chat_fab);
 		mMainPresenter.addView(this);
+		setOnClickListener();
 		
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.map);
@@ -228,8 +237,31 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	 */
 	@Override
 	public void onClick(View view) {
-		autocompleteFragment.getView().setVisibility(View.VISIBLE);
-		mDestButton.setVisibility(View.GONE);
+		int id = view.getId();
+		switch (id) {
+			case R.id.change_destination_btn:
+				autocompleteFragment.getView().setVisibility(View.VISIBLE);
+				mDestButton.setVisibility(View.GONE);
+				break;
+			case R.id.create_group_fab:
+				mClickHereFabMenu.close(true);
+				Toast.makeText(this, "create group fab clicked", Toast.LENGTH_SHORT).show();
+				break;
+			case R.id.add_user_fab:
+				//TODO: Add a user
+				mClickHereFabMenu.close(true);
+				break;
+			case R.id.group_chat_fab:
+				//TODO: Add group chat
+				mClickHereFabMenu.close(true);
+				break;
+			case R.id.register_fab:
+				//TODO: Add register
+				mClickHereFabMenu.close(true);
+				break;
+			default:
+				break;
+		}
 	}
 	
 	/**
@@ -345,5 +377,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			radius = radius > distance ? radius : distance;
 		}
 		return radius;
+	}
+	
+	private void setOnClickListener() {
+		mDestButton.setOnClickListener(this);
+		mCreateGroupFab.setOnClickListener(this);
+		mAddFriendFab.setOnClickListener(this);
+		mGroupChatFab.setOnClickListener(this);
+		mRegisterFab.setOnClickListener(this);
 	}
 }
