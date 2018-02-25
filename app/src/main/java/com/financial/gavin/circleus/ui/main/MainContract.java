@@ -19,11 +19,12 @@ public interface MainContract {
 		void setCurrentLocation(Location location);
 		void handleCurrentLocationError(Exception e);
 		void updateSlider(List<User> users);
+		void setUsers(List<User> mUsers);
 	}
 	
 	interface Presenter extends BasePresenter<View> {
 		void initLocationSettingsRequest();
 		void startLocationUpdates();
-		List<User> getUsers();
+		void getUsers();
 	}
 }

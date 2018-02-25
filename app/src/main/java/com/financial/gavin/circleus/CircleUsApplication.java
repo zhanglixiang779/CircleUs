@@ -3,12 +3,17 @@ package com.financial.gavin.circleus;
 import android.app.Application;
 
 import com.financial.gavin.circleus.data.DataManager;
+import com.financial.gavin.circleus.data.firebase.Mock;
+import com.financial.gavin.circleus.data.model.User;
 import com.financial.gavin.circleus.di.activityScope.ActivityComponent;
 import com.financial.gavin.circleus.di.activityScope.GoogleServiceModule;
 import com.financial.gavin.circleus.di.activityScope.PresentersModule;
 import com.financial.gavin.circleus.di.appScope.AppComponent;
 import com.financial.gavin.circleus.di.appScope.AppModule;
 import com.financial.gavin.circleus.di.appScope.DaggerAppComponent;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -20,6 +25,8 @@ public class CircleUsApplication extends Application {
 	
 	@Inject
 	DataManager mDataManager;
+	@Inject
+	FirebaseDatabase mFirebase;
 	
 	private AppComponent mAppComponent;
 	private ActivityComponent mActivityComponent;
@@ -29,12 +36,23 @@ public class CircleUsApplication extends Application {
 		return instance;
 	}
 	
+	public DataManager getDataManager() {
+		return mDataManager;
+	}
+	
+	public FirebaseDatabase getFirebase() {
+		return mFirebase;
+	}
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		instance = this;
 		mAppComponent = getAppComponent();
 		mAppComponent.inject(this);
+		
+		List<User> users = new Mock().getUsers();
+		mFirebase.getReference().child("groups").child("group1").setValue(users);
 	}
 	
 	public synchronized AppComponent getAppComponent() {
@@ -52,9 +70,5 @@ public class CircleUsApplication extends Application {
 	
 	public void dropActivityComponent() {
 		mActivityComponent = null;
-	}
-	
-	public DataManager getDataManager() {
-		return mDataManager;
 	}
 }
