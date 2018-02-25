@@ -73,7 +73,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private RecyclerView mRecyclerView;
 	private Button mDestButton;
 	private FloatingActionMenu mClickHereFabMenu;
-	private FloatingActionButton mCreateGroupFab, mAddFriendFab, mGroupChatFab, mRegisterFab;
+	private FloatingActionButton mCreateGroupFab, mAddFriendFab, mGroupChatFab, mPanoramaViewFab, mRegisterFab;
 	private List<User> mUsers;
 	private LatLng mSelectedMarkerLatLng;
 	
@@ -107,6 +107,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		mAddFriendFab = findViewById(R.id.add_user_fab);
 		mCreateGroupFab = findViewById(R.id.create_group_fab);
 		mGroupChatFab = findViewById(R.id.group_chat_fab);
+		mPanoramaViewFab = findViewById(R.id.panorama_view_fab);
 		mMainPresenter.addView(this);
 		setOnClickListener();
 		
@@ -255,6 +256,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				//TODO: Add group chat
 				mClickHereFabMenu.close(true);
 				break;
+			case R.id.panorama_view_fab:
+				circleUs(mLatLngList);
+				mClickHereFabMenu.close(true);
 			case R.id.register_fab:
 				//TODO: Add register
 				mClickHereFabMenu.close(true);
@@ -384,6 +388,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		mCreateGroupFab.setOnClickListener(this);
 		mAddFriendFab.setOnClickListener(this);
 		mGroupChatFab.setOnClickListener(this);
+		mPanoramaViewFab.setOnClickListener(this);
 		mRegisterFab.setOnClickListener(this);
 	}
 }
