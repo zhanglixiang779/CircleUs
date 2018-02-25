@@ -10,13 +10,18 @@ public class User {
 	private String name;
 	private String phoneNumber;
 	private String thumbNailUrl;
-	private LatLng latLng;
+	private double latitude;
+	private double longitude;
 	
-	public User(String name, String phoneNumber, String thumbNailUrl, LatLng latLng) {
+	public User() {
+	}
+	
+	public User(String name, String phoneNumber, String thumbNailUrl, double latitude, double longitude) {
 		this.name = name;
 		this.phoneNumber = phoneNumber;
 		this.thumbNailUrl = thumbNailUrl;
-		this.latLng = latLng;
+		this.latitude = latitude;
+		this.longitude = longitude;
 	}
 	
 	public String getName() {
@@ -43,11 +48,19 @@ public class User {
 		this.thumbNailUrl = thumbNailUrl;
 	}
 	
-	public LatLng getLatLng() {
-		return latLng;
+	public double getLatitude() {
+		return latitude;
 	}
 	
-	public void setLatLng(LatLng latLng) {
-		this.latLng = latLng;
+	public void setLatitude(double latitude) {
+		this.latitude = latitude;
+	}
+	
+	public double getLongitude() {
+		return longitude;
+	}
+	
+	public void setLongitude(double longitude) {
+		this.longitude = longitude;
 	}
 }

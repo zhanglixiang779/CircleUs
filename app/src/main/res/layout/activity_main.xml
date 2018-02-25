@@ -73,20 +73,56 @@
 
         </android.support.v7.widget.RecyclerView>
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
+        <com.github.clans.fab.FloatingActionMenu
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:clickable="true"
-            android:focusable="true"
-            android:scaleType="center"
-            map:backgroundTint="@android:color/transparent"
-            map:elevation="8dp"
-            map:fabSize="normal"
+            android:layout_marginBottom="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
             map:layout_constraintBottom_toTopOf="@+id/slider"
-            map:layout_constraintEnd_toEndOf="parent"
-            map:layout_constraintStart_toStartOf="parent"
-            map:srcCompat="@drawable/add_user" />
+            map:layout_constraintEnd_toEndOf="@+id/map"
+            map:layout_constraintStart_toStartOf="@+id/map"
+            map:menu_colorNormal="@android:color/transparent"
+            map:menu_colorPressed="@android:color/black"
+            map:menu_colorRipple="@android:color/transparent"
+            map:menu_icon="@drawable/click_here">
+
+            <com.github.clans.fab.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/register"
+                map:fab_colorNormal="@android:color/transparent"
+                map:fab_label="@string/register"
+                map:fab_shadowColor="@android:color/holo_purple"
+                map:fab_size="mini" />
+
+            <com.github.clans.fab.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/group_chat"
+                map:fab_colorNormal="@android:color/transparent"
+                map:fab_label="@string/group_chat"
+                map:fab_shadowColor="@android:color/holo_red_light"
+                map:fab_size="mini" />
+
+            <com.github.clans.fab.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/add_user"
+                map:fab_colorNormal="@android:color/transparent"
+                map:fab_label="@string/add_user"
+                map:fab_shadowColor="@color/colorAccent"
+                map:fab_size="mini" />
+
+            <com.github.clans.fab.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/create_group"
+                map:fab_colorNormal="@android:color/transparent"
+                map:fab_label="@string/create_group"
+                map:fab_shadowColor="@color/colorPrimary"
+                map:fab_size="mini" />
+        </com.github.clans.fab.FloatingActionMenu>
 
     </android.support.constraint.ConstraintLayout>
     <FrameLayout

@@ -46,7 +46,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.SphericalUtil;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -71,7 +70,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private View mapView;
 	private RecyclerView mRecyclerView;
 	private Button mDestButton;
-	private List<User> users;
+	private List<User> mUsers;
 	private LatLng mSelectedMarkerLatLng;
 	
 	private static final int REQUEST_CHECK_SETTINGS = 100;
@@ -131,7 +130,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		mMap.setPadding(PADDING_LEFT, PADDING_TOP, PADDING_RIGHT, dpToPx(PADDING_BOTTOM));
 		adjustMyLocationButton(mapView);
 		mMainPresenter.initLocationSettingsRequest();
-		users = mMainPresenter.getUsers();
+		mMainPresenter.getUsers();
 		
 		//This call is invoked after the map layout is complete
 		mMap.setOnMapLoadedCallback(this);
@@ -206,7 +205,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				LinearLayoutManager lm = (LinearLayoutManager)recyclerView.getLayoutManager();
 				int position = lm.findFirstCompletelyVisibleItemPosition();
 				User user = users.get(position % users.size());
-				LatLng latLng = user.getLatLng();
+				LatLng latLng = new LatLng(user.getLatitude(), user.getLongitude());
 				CameraPosition cameraPosition = new CameraPosition.Builder()
 						.target(latLng)
 						.zoom(ZOOM_LEVEL)
@@ -216,6 +215,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), ANIMATION_PERIOD, null);
 			}
 		});
+	}
+	
+	@Override
+	public void setUsers(List<User> users) {
+		mUsers = users;
 	}
 	
 	/**
@@ -259,9 +263,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	 */
 	@Override
 	public void onMapLoaded() {
-		for (User user : users) {
+		for (User user : mUsers) {
 			Marker userMarker = mMap.addMarker(new MarkerOptions()
-					.position(user.getLatLng())
+					.position(new LatLng(user.getLatitude(), user.getLongitude()))
 					.title(user.getName()));
 			userMarker.setTag(user.getName());
 			mUserMarkers.add(userMarker);

@@ -9,6 +9,7 @@ import com.financial.gavin.circleus.data.api.GoogleApis;
 import com.financial.gavin.circleus.data.api.GoogleApisImpl;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,4 +62,11 @@ public class AppModule {
 	List<LatLng> providesLatLngList() {
 		return new ArrayList<>();
 	}
+	
+	@Singleton
+	@Provides
+	FirebaseDatabase providesFirebaseDatabase() {
+		return FirebaseDatabase.getInstance();
+	}
+	
 }
