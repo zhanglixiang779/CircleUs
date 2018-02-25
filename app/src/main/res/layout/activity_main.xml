@@ -22,12 +22,11 @@
             android:layout_height="0dp"
             map:layout_constraintBottom_toBottomOf="parent"
             map:layout_constraintEnd_toEndOf="parent"
-            map:layout_constraintHorizontal_bias="0.0"
+            map:layout_constraintHorizontal_bias="1.0"
             map:layout_constraintStart_toStartOf="parent"
             map:layout_constraintTop_toTopOf="parent"
             map:layout_constraintVertical_bias="0.0"
-            tools:context="com.financial.gavin.circleus.ui.main.MainActivity">
-        </fragment>
+            tools:context="com.financial.gavin.circleus.ui.main.MainActivity"></fragment>
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -61,11 +60,12 @@
             android:id="@+id/click_here_fab_menu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="0dp"
+            android:layout_marginBottom="48dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             map:layout_constraintBottom_toTopOf="@+id/slider"
             map:layout_constraintEnd_toEndOf="@+id/map"
+            map:layout_constraintHorizontal_bias="0.957"
             map:layout_constraintStart_toStartOf="@+id/map"
             map:menu_colorNormal="@android:color/transparent"
             map:menu_colorPressed="@android:color/black"
@@ -142,8 +142,8 @@
     </android.support.constraint.ConstraintLayout>
     <FrameLayout
         android:id="@+id/panel"
-        android:layout_width="400dp"
-        android:layout_height="400dp">
+        android:layout_width="match_parent"
+        android:layout_height="500dp">
         <fragment
             android:name="com.google.android.gms.maps.SupportStreetViewPanoramaFragment"
             android:id="@+id/street_view_panorama"
