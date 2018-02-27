@@ -25,4 +25,10 @@
     <string name="list_view_phone">Phone:</string>
     <string name="change_destination_button">Change Destination</string>
     <string name="auto_complete_hint">Set destination</string>
+
+
+    <string name="group_name">Group name:</string>
+    <string name="pos_button_name">Set</string>
+    <string name="neg_button_name">Not Now</string>
+
 </resources>

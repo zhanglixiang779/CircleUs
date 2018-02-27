@@ -2,6 +2,7 @@ package com.financial.gavin.circleus.ui.main;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.res.Resources;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import com.financial.gavin.circleus.CircleUsApplication;
 import com.financial.gavin.circleus.R;
 import com.financial.gavin.circleus.data.model.User;
+import com.financial.gavin.circleus.ui.dialog.CustomDialog;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -45,6 +47,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.maps.android.SphericalUtil;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
@@ -54,7 +58,7 @@ import javax.inject.Inject;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback, OnStreetViewPanoramaReadyCallback,
 						MainContract.View, View.OnClickListener, PlaceSelectionListener, GoogleMap.OnMarkerClickListener,
-						GoogleMap.OnMapLoadedCallback {
+						GoogleMap.OnMapLoadedCallback, CustomDialog.NoticeListener {
 	
 	@Inject
 	MainContract.Presenter mMainPresenter;
@@ -76,6 +80,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private FloatingActionButton mCreateGroupFab, mAddFriendFab, mGroupChatFab, mPanoramaViewFab, mRegisterFab;
 	private List<User> mUsers;
 	private LatLng mSelectedMarkerLatLng;
+	private String mGroupName;
 	
 	private static final int REQUEST_CHECK_SETTINGS = 100;
 	private static final int INDIVIDUAL_ZOOM_LEVEL = 15;
@@ -247,6 +252,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			case R.id.create_group_fab:
 				mClickHereFabMenu.close(true);
 				Toast.makeText(this, "create group fab clicked", Toast.LENGTH_SHORT).show();
+				CustomDialog dialog = CustomDialog.newInstance(R.layout.group_creation_view,
+						R.string.pos_button_name, R.string.neg_button_name);
+				dialog.show(getFragmentManager(), "group_creation");
 				break;
 			case R.id.add_user_fab:
 				//TODO: Add a user
@@ -325,6 +333,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 			streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
 		}
 		return false;
+	}
+	
+	@Override
+	public void onDialogPositiveClick(String groupName) {
+		mGroupName = groupName;
+	}
+	
+	@Override
+	public void onDialogNegativeClick(CustomDialog customDialog) {
+		customDialog.getDialog().cancel();
 	}
 	
 	private void circleUs(List<LatLng> latLngList) {
