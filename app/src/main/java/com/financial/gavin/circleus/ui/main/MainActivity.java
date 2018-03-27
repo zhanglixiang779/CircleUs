@@ -7,6 +7,8 @@ import android.content.IntentSender;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -14,7 +16,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
@@ -23,9 +27,12 @@ import android.widget.Toast;
 import com.financial.gavin.circleus.CircleUsApplication;
 import com.financial.gavin.circleus.R;
 import com.financial.gavin.circleus.data.model.User;
-import com.financial.gavin.circleus.ui.dialog.CustomDialog;
+import com.financial.gavin.circleus.ui.dialog.AddUserDialog;
+import com.financial.gavin.circleus.ui.dialog.BaseDialog;
+import com.financial.gavin.circleus.ui.dialog.CreateGroupDialog;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
@@ -46,16 +53,21 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
+import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.google.maps.android.SphericalUtil;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback, OnStreetViewPanoramaReadyCallback,
 						MainContract.View, View.OnClickListener, PlaceSelectionListener, GoogleMap.OnMarkerClickListener,
-						GoogleMap.OnMapLoadedCallback, CustomDialog.NoticeListener {
+						GoogleMap.OnMapLoadedCallback, BaseDialog.NoticeListener {
 	
 	@Inject
 	MainContract.Presenter mMainPresenter;
@@ -64,6 +76,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	@Inject
 	List<LatLng> mLatLngList;
 	
+	private static final String TAG = MainActivity.class.getSimpleName();
 	private GoogleMap mMap;
 	private Circle mCircle;
 	private SupportPlaceAutocompleteFragment autocompleteFragment;
@@ -78,8 +91,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	private List<User> mUsers;
 	private LatLng mSelectedMarkerLatLng;
 	private String mGroupName;
+	float dX, dY;
+	int lastAction;
 	
 	private static final int REQUEST_CHECK_SETTINGS = 100;
+	private static final int FIREBASE_INVITE_REQUEST_CODE = 101;
 	private static final int INDIVIDUAL_ZOOM_LEVEL = 15;
 	private static final int ZOOM_LEVEL = 12;
 	private static final int ANIMATION_PERIOD = 1000;
@@ -100,6 +116,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		checkInvite();
 		CircleUsApplication.getInstance().getActivityComponent().inject(this);
 		mRecyclerView = findViewById(R.id.slider);
 		mDestButton = findViewById(R.id.change_destination_btn);
@@ -175,7 +192,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		switch (requestCode) {
 			case REQUEST_CHECK_SETTINGS:
 				switch (resultCode) {
-					case Activity.RESULT_OK:
+					case RESULT_OK:
 						mMainPresenter.initLocationSettingsRequest();
 						break;
 					case Activity.RESULT_CANCELED:
@@ -185,6 +202,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 						break;
 				}
 				break;
+			case FIREBASE_INVITE_REQUEST_CODE:
+				switch (resultCode) {
+					case RESULT_OK:
+						//TODO:
+				}
 			default:
 				break;
 		}
@@ -216,7 +238,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				super.onScrollStateChanged(recyclerView, newState);
 				LinearLayoutManager lm = (LinearLayoutManager)recyclerView.getLayoutManager();
 				int position = lm.findFirstCompletelyVisibleItemPosition();
-				User user = users.get(position % users.size());
+				User user = users.get(++position % users.size());
 				LatLng latLng = new LatLng(user.getLatitude(), user.getLongitude());
 				CameraPosition cameraPosition = new CameraPosition.Builder()
 						.target(latLng)
@@ -248,14 +270,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 				break;
 			case R.id.create_group_fab:
 				mClickHereFabMenu.close(true);
-				Toast.makeText(this, "create group fab clicked", Toast.LENGTH_SHORT).show();
-				CustomDialog dialog = CustomDialog.newInstance(R.layout.group_creation_view,
+				CreateGroupDialog dialog = CreateGroupDialog.newInstance(R.layout.create_group_view,
 						R.string.pos_button_name, R.string.neg_button_name);
-				dialog.show(getFragmentManager(), "group_creation");
+				dialog.show(getFragmentManager(), "create_group");
 				break;
 			case R.id.add_user_fab:
-				//TODO: Add a user
 				mClickHereFabMenu.close(true);
+				addUser();
 				break;
 			case R.id.group_chat_fab:
 				//TODO: Add group chat
@@ -333,13 +354,18 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 	}
 	
 	@Override
-	public void onDialogPositiveClick(String groupName) {
-		mGroupName = groupName;
+	public void onDialogPositiveClick(Map<String, Object> data) {
+		String groupName = String.valueOf(data.get("group_name"));
+		String phoneNumber = String.valueOf(data.get("phone_number"));
+		String name = String.valueOf(data.get("name"));
+		if (groupName != null) {
+			mGroupName = groupName;
+		}
 	}
 	
 	@Override
-	public void onDialogNegativeClick(CustomDialog customDialog) {
-		customDialog.getDialog().cancel();
+	public void onDialogNegativeClick(BaseDialog baseDialog) {
+		baseDialog.getDialog().cancel();
 	}
 	
 	private void circleUs(List<LatLng> latLngList) {
@@ -407,5 +433,42 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 		mGroupChatFab.setOnClickListener(this);
 		mPanoramaViewFab.setOnClickListener(this);
 		mRegisterFab.setOnClickListener(this);
+	}
+	
+	private void addUser() {
+		if (mGroupName != null) {
+			Intent intent = new AppInviteInvitation.IntentBuilder(getString(R.string.invitation_title))
+					.setMessage(getString(R.string.invitation_message))
+					.setDeepLink(Uri.parse(mGroupName))
+					.setCallToActionText(getString(R.string.invitation_cta))
+					.build();
+			startActivityForResult(intent, FIREBASE_INVITE_REQUEST_CODE);
+		} else {
+			Toast.makeText(this, "Please create a group name first!", Toast.LENGTH_SHORT).show();
+		}
+	
+	}
+	
+	private void checkInvite() {
+		FirebaseDynamicLinks.getInstance().getDynamicLink(getIntent())
+				.addOnSuccessListener(this, new OnSuccessListener<PendingDynamicLinkData>() {
+					@Override
+					public void onSuccess(PendingDynamicLinkData data) {
+						if (data == null) {
+							return;
+						}
+						
+						mGroupName = String.valueOf(data.getLink());
+						AddUserDialog dialog = AddUserDialog.newInstance(R.layout.add_user_view,
+								R.string.pos_button_name, R.string.neg_button_name);
+						dialog.show(getFragmentManager(), "add_user");
+					}
+				})
+				.addOnFailureListener(this, new OnFailureListener() {
+					@Override
+					public void onFailure(@NonNull Exception e) {
+						Log.d(TAG, "getDynamicLink:onFailure", e);
+					}
+				});
 	}
 }
