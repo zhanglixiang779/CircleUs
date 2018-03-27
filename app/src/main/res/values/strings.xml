@@ -21,14 +21,24 @@
     <string name="group_chat">Group Chat</string>
     <string name="panorama_view">Panorama View</string>
 
+    <!--Firebase Invites-->
+    <string name="invitation_title">CircleUs Invites</string>
+    <string name="invitation_message">CircleUs group invitation</string>
+    <string name="invitation_cta">click here!</string>
+    <string name="email_subject">CircleUs Invites</string>
+
     <string name="list_view_name">Name:</string>
     <string name="list_view_phone">Phone:</string>
     <string name="change_destination_button">Change Destination</string>
     <string name="auto_complete_hint">Set destination</string>
 
-
+    <!--Dialog-->
     <string name="group_name">Group name:</string>
+    <string name="contact_information">Contact Information:</string>
+    <string name="phone_number">Phone:</string>
+    <string name="name">Name:</string>
     <string name="pos_button_name">Set</string>
     <string name="neg_button_name">Not Now</string>
+
 
 </resources>
